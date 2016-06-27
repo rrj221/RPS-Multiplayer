@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Firebase RPS</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+	<h1>Rock Paper Scissors - Multiplayer</h1>
+	<div class="container">
+		<div class="row">
+			<div class='col-md-4'></div>
+			<div class='col-md-4 topPart'>
+				<form class="form-inline usernameForm">
+				    <div class="form-group">
+				      <input type="text" id="nameInput" class="form-control" id="exampleInputEmail3" placeholder="Name">
+				    </div>
+				    <button type="submit" id="startButton" class="btn btn-primary">Start</button>
+				</form>
+			</div>
+			<div class='col-md-4'></div>
+		</div>
+		<div class="row">
+			<div id="player1Box" class="col-md-4 box">
+				<p id="p1Name">
+					Waiting for Player 1
+				</p>				
+				<span id="p1WinsLosses">
+					
+				</span>	
+			</div>
+			<div class="col-md-4 box">
+				
+			</div>
+			<div id="player2Box" class="col-md-4 box">
+				<p id="p2Name">
+					Waiting for Player 2
+				</p>				
+				<span id="p2WinsLosses">
+					
+				</span>	
+			</div>			
+		</div>
+	</div>
+
+
+
+
+	<script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+	<script   src="https://code.jquery.com/jquery-3.0.0.js"   integrity="sha256-jrPLZ+8vDxt2FnE1zvZXCkCcebI/C8Dt5xyaQBjxQIo="   crossorigin="anonymous"></script>
+	<script src="assets/javascript/rps-script.js"></script>
+
+</body>
+</html>

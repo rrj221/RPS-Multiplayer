@@ -1,0 +1,17 @@
+.box {
+	border-color: black;
+	border-style: solid;
+	border-width: 1px;
+	height: 100px;
+	position: relative;
+}
+
+#p1WinsLosses {
+	position: absolute;
+	bottom: 0;
+}
+
+#p2WinsLosses {
+	position: absolute;
+	bottom: 0;
+}
