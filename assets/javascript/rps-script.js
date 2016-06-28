@@ -431,3 +431,19 @@ function displayWaitingFor(otherPlayerNumber) {
 		text: "Waiting for "+getName(otherPlayerNumber)+" to choose" 
 	}).appendTo($(".topPart"));
 };
+
+
+//CHAT////////////
+
+$('#chatForm').on('submit', function () {
+	var message = $('#chatMessage').val();
+	var chatter = getName(currentPlayer);
+	dbRef.update({
+		chat: chatter+": "+message
+	});
+
+
+	$('#chatMessage').val("");
+
+	return false;
+});
