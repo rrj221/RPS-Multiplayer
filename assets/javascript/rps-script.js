@@ -7,10 +7,9 @@
 
 
 var choicesArray = ['Rock', 'Paper', 'Scissors'];
-//SET THIS TO ONE FOR DEBUGGING - SET TO 0 LATER!!!!!!!!!!!///////////////////////////////////////
-//*************************
+
 var currentPlayer = 0;
-//*************************
+
 var canUpdateBoxP1 = true;
 // var canUpdateP1Choice = false;
 var canUpdateBoxP2 = true;
@@ -86,6 +85,7 @@ function displayName (playerNumber, playerName) {
 function login(name, playerNumber) {
 	$('.usernameForm').hide();
 	var playerMessageDiv = $('<div>', {
+		class: 'userMessage1',
 		text: "Hi "+name+"! You are Player "+playerNumber
 	});
 	playerMessageDiv.appendTo($('.topPart'));
@@ -110,6 +110,7 @@ function login(name, playerNumber) {
 	} 
 	else if (playerNumber === 2) {
 		// alert('yay');
+		currentPlayer = 2;
 		dbRef.child('players').update({
 			2: {
 				losses: 0,
@@ -118,7 +119,7 @@ function login(name, playerNumber) {
 			},
 			turn: 1
 		});
-		currentPlayer = 2;
+		// currentPlayer = 2;
 	}	
 };
 
@@ -183,18 +184,34 @@ dbRef.on('value', function (Snapshot) {
 	displayName(2, player2Name);
 
 	//turn one
+	if (currentPlayer === 2) {
+		// alert('wtfssss');
+		displayWaitingFor(1);
+	}
+
 	if (Snapshot.val().players.turn === 1) {
 		if (currentPlayer === 1 && canUpdateBoxP1) {
 			showChoices(1, choicesArray);
 			canUpdateBoxP1 = false;
+
+			displayItsYourTurn();
 		}
+
+
 	}
 
 	//turn two
 	else if (Snapshot.val().players.turn === 2) {
+		$(".userMessage2").remove();
 		if (currentPlayer === 2 && canUpdateBoxP2) {
 			showChoices(2, choicesArray);
 			canUpdateBoxP2 = false;
+
+			displayItsYourTurn();
+		}
+
+		if (currentPlayer === 1) {
+			displayWaitingFor(2);
 		}
 	}
 
@@ -207,6 +224,7 @@ dbRef.on('value', function (Snapshot) {
 			displayChoice(2);
 		}
 		gamePlay(getChoice(1), getChoice(2));
+		$('.userMessage2').remove();
 		
 		setTimeout(function () {
 			canUpdateBoxP1 = true;
@@ -277,9 +295,9 @@ $('.box').on('click', '.choice', function () {
 		$('.choicesDiv').remove();  //removes player 2's choice
 	}
 
-	if (getTurn !== 3) {
-		incrementTurn();
-	}
+	//I think I can take out this if statement but keep the increment
+	//need to test to make sure if have time
+	incrementTurn();
 
 
 	// if (currentTurn === 1) {
@@ -354,10 +372,9 @@ function gamePlay(p1Choice, p2Choice) {
 				updateLosses(1);
 	}
 	else if (p1Choice === p2Choice) {
-		alert('tie game');
+		displayTie();
 		resetTurn();
 	}
-	else alert('wtf');
 };
 
 function updateWins(winner) {
@@ -392,4 +409,25 @@ function displayWinner(playerNumber) {
 		class: 'winner',
 		text: name+" is the Winner!"
 	}).appendTo($("#winnerDiv"));
+};
+
+function displayTie() {
+	$('<div>', {
+		class: 'winner',
+		text: "Tie Game!"
+	}).appendTo($("#winnerDiv"));
+};
+
+function displayItsYourTurn() {
+	$('<div>', {
+		class: 'userMessage2', 
+		text: "It's your turn!" 
+	}).appendTo($(".topPart"));
+};
+
+function displayWaitingFor(otherPlayerNumber) {
+	$('<div>', {
+		class: 'userMessage2', 
+		text: "Waiting for "+getName(otherPlayerNumber)+" to choose" 
+	}).appendTo($(".topPart"));
 };
