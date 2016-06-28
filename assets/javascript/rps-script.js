@@ -4,12 +4,16 @@
 // 	alert('jquery!');
 // });
 
+
+
 var choicesArray = ['Rock', 'Paper', 'Scissors'];
 //SET THIS TO ONE FOR DEBUGGING - SET TO 0 LATER!!!!!!!!!!!///////////////////////////////////////
 //*************************
 var currentPlayer = 0;
 //*************************
-var canUpdateBox = true;
+var canUpdateBoxP1 = true;
+// var canUpdateP1Choice = false;
+var canUpdateBoxP2 = true;
   
 var config = {
     apiKey: "AIzaSyAUfn3q5rPIf_V9-dSRu30GntbrF_LzPWE",
@@ -21,6 +25,9 @@ var config = {
 
 // Create a variable to reference the database.
 var dbRef = firebase.database().ref()
+
+
+
 
 //initialize players object in firebase
 // dbRef.set({
@@ -146,6 +153,11 @@ $('.usernameForm').on('submit', function () {
 		// showWinsLosses(1);
 	}
 
+	//turn one
+	// if (currentPlayer === 1) {
+	// 	showChoices(1, choicesArray);
+	// }
+
 	return false;
 });
 
@@ -166,23 +178,43 @@ dbRef.on('value', function (Snapshot) {
 	//updates name when it changes
 	var p2Wins = Snapshot.val().players[2].wins;
 	var p2Losses = Snapshot.val().players[2].losses;
-	displayWinsLosses(2, p1Wins, p1Losses);
+	displayWinsLosses(2, p2Wins, p2Losses);
 	var player2Name = Snapshot.val().players[2].name;
 	displayName(2, player2Name);
 
 	//turn one
 	if (Snapshot.val().players.turn === 1) {
-		if (currentPlayer === 1) {
+		if (currentPlayer === 1 && canUpdateBoxP1) {
 			showChoices(1, choicesArray);
+			canUpdateBoxP1 = false;
 		}
+
+		//i was being stupid - only want player 1 to see his choice, not both
+		// if (Snapshot.val().players[1].choice) {
+		// 	displayChoice(1);
+		// 	// canUpdateP1Choice = false;
+		// }
 	}
 
 	//turn two
 	if (Snapshot.val().players.turn === 2) {
-		if (currentPlayer === 2 && canUpdateBox) {
+		if (currentPlayer === 2 && canUpdateBoxP2) {
 			showChoices(2, choicesArray);
-			canUpdateBox = false;
+			canUpdateBoxP2 = false;
 		}
+	}
+
+	//turn three
+	if (Snapshot.val().players.turn === 3) {
+		if (currentPlayer === 2) {
+			displayChoice(1);
+			displayChoice(2);
+		} else if (currentPlayer === 1) {
+			displayChoice(2);
+		}
+	gamePlay(getChoice(1), getChoice(2));
+	incrementTurn();
+
 	}
 });
 
@@ -206,8 +238,10 @@ function showChoices(playerNumber, choicesArray) {
 
 $('.box').on('click', '.choice', function () {
 	console.log($(this).data('choice'));
-	var choiceClicked = $(this).data('choice'); //ie 'rock', 'paper'
+	var choiceClicked = $(this).data('choice'); //ie 'Rock', 'Paper'
 	var currentTurn = getTurn();
+
+
 
 	//turn one
 	// if (currentTurn === 1) {
@@ -221,12 +255,22 @@ $('.box').on('click', '.choice', function () {
 	// 	showChoices(2, choicesArray);
 	// }
 
+	if (currentTurn === 1) {
+		addChoiceToFirebase(1, choiceClicked);
 
+		//display choice to DOM////////////////////////
+		$('.choicesDiv').remove();  //removes player 1's choice
+		displayChoice(1); // it's here because I only want to show to player one now
+	}
 
+	if (currentTurn === 2) {
+		addChoiceToFirebase(2, choiceClicked);
+
+		$('.choicesDiv').remove();  //removes player 2's choice
+	}
 
 
 	incrementTurn();
-	addChoiceToFirebase(1, choiceClicked);
 
 
 	// if (currentTurn === 1) {
@@ -237,11 +281,15 @@ $('.box').on('click', '.choice', function () {
 });
 
 function incrementTurn() {
-	dbRef.once('value', function (snapshot) {
-		var currentTurn = snapshot.val().players.turn;
-		dbRef.child('players').update({
-			turn: currentTurn + 1
-		});
+	var currentTurn = getTurn();
+	dbRef.child('players').update({
+		turn: currentTurn + 1
+	});
+};
+
+function resetTurn() {
+	dbRef.child('players').update({
+		turn: 0
 	});
 };
 
@@ -249,13 +297,91 @@ function getTurn() {
 	var currentTurn;
 	dbRef.once('value', function (snapshot) {
 		currentTurn = snapshot.val().players.turn;
-		// return 1;
 	});
 	return currentTurn;
 };
 
 function addChoiceToFirebase(playerNumber, choice) {
-	dbRef.child('players').child(1).update({
+	dbRef.child('players').child(playerNumber).update({
 		choice: choice
 	});
+};
+
+function getChoice(playerNumber) {
+	var currentChoice;
+	dbRef.once('value', function (snapshot) {
+		currentChoice = snapshot.val().players[playerNumber].choice
+	});
+	return currentChoice;
+};
+
+//might need this later
+function displayChoice(playerNumber) {
+	var choice = getChoice(playerNumber);
+	var BoxID = "#player"+playerNumber+"Box";
+
+	$('<div>', {
+		class: 'choiceClickedDiv',
+		text: choice
+	}).appendTo($(BoxID));
+};
+
+
+function gamePlay(p1Choice, p2Choice) {
+	if ((p1Choice === "Rock" && p2Choice === "Scissors") ||
+		(p1Choice === "Paper" && p2Choice === "Rock") ||
+		(p1Choice === "Scissors" && p2Choice === "Paper")) {
+			alert('p1 wins!');
+			displayWinner(1);
+		resetTurn();
+			updateWins(1);
+			updateLosses(2);
+	} 
+	else if ((p2Choice === "Rock" && p1Choice === "Scissors") ||
+		    (p2Choice === "Paper" && p1Choice === "Rock") ||
+		    (p2Choice === "Scissors" && p1Choice === "Paper")) {
+				alert('p2 wins!');
+				displayWinner(2);
+			resetTurn();
+				updateWins(2);
+				updateLosses(1);
+	}
+	else if (p1Choice === p2Choice) {
+		alert('tie game');
+	}
+	else alert('wtf');
+};
+
+function updateWins(winner) {
+	dbRef.once('value', function (snapshot) {
+		var currentWins = snapshot.val().players[winner].wins;
+		dbRef.child('players').child(winner).update({
+			wins: currentWins + 1
+		});
+	});
+};
+
+function updateLosses(loser) {
+	dbRef.once('value', function (snapshot) {
+		var currentLosses = snapshot.val().players[loser].losses;
+		dbRef.child('players').child(loser).update({
+			losses: currentLosses + 1
+		});
+	});
+};
+
+function getName(playerNumber) {
+	var name;
+	dbRef.once('value', function (snapshot) {
+		name = snapshot.val().players[playerNumber].name;
+	})
+	return name;
+};
+
+function displayWinner(playerNumber) {
+	var name = getName(playerNumber);
+	$('div', {
+		class: 'winner',
+		text: name+" is the Winner!"
+	}).appendTo($("#winnerDiv"));
 };
