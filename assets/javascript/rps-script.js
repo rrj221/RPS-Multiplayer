@@ -380,7 +380,7 @@ function getName(playerNumber) {
 
 function displayWinner(playerNumber) {
 	var name = getName(playerNumber);
-	$('div', {
+	$('<div>', {
 		class: 'winner',
 		text: name+" is the Winner!"
 	}).appendTo($("#winnerDiv"));
