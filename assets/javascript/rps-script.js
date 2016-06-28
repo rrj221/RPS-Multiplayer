@@ -188,16 +188,10 @@ dbRef.on('value', function (Snapshot) {
 			showChoices(1, choicesArray);
 			canUpdateBoxP1 = false;
 		}
-
-		//i was being stupid - only want player 1 to see his choice, not both
-		// if (Snapshot.val().players[1].choice) {
-		// 	displayChoice(1);
-		// 	// canUpdateP1Choice = false;
-		// }
 	}
 
 	//turn two
-	if (Snapshot.val().players.turn === 2) {
+	else if (Snapshot.val().players.turn === 2) {
 		if (currentPlayer === 2 && canUpdateBoxP2) {
 			showChoices(2, choicesArray);
 			canUpdateBoxP2 = false;
@@ -205,16 +199,30 @@ dbRef.on('value', function (Snapshot) {
 	}
 
 	//turn three
-	if (Snapshot.val().players.turn === 3) {
+	else if (Snapshot.val().players.turn === 3) {
 		if (currentPlayer === 2) {
 			displayChoice(1);
 			displayChoice(2);
 		} else if (currentPlayer === 1) {
 			displayChoice(2);
 		}
-	gamePlay(getChoice(1), getChoice(2));
-	incrementTurn();
+		gamePlay(getChoice(1), getChoice(2));
+		
+		setTimeout(function () {
+			canUpdateBoxP1 = true;
+			$('#winnerDiv').empty();
+			$('.choiceClickedDiv').remove();
+			canUpdateBoxP2 = true;
+			if (currentPlayer === 1) {
+				incrementTurn();
+			}
 
+			// if (turn === 0) {
+			// 	alert('yayaya');
+			// 	// incrementTurn();
+			// 	canUpdateBoxP1 = true;
+			// }
+		}, 5 * 1000);
 	}
 });
 
@@ -269,8 +277,9 @@ $('.box').on('click', '.choice', function () {
 		$('.choicesDiv').remove();  //removes player 2's choice
 	}
 
-
-	incrementTurn();
+	if (getTurn !== 3) {
+		incrementTurn();
+	}
 
 
 	// if (currentTurn === 1) {
@@ -331,23 +340,22 @@ function gamePlay(p1Choice, p2Choice) {
 	if ((p1Choice === "Rock" && p2Choice === "Scissors") ||
 		(p1Choice === "Paper" && p2Choice === "Rock") ||
 		(p1Choice === "Scissors" && p2Choice === "Paper")) {
-			alert('p1 wins!');
 			displayWinner(1);
-		resetTurn();
+			resetTurn();
 			updateWins(1);
 			updateLosses(2);
 	} 
 	else if ((p2Choice === "Rock" && p1Choice === "Scissors") ||
 		    (p2Choice === "Paper" && p1Choice === "Rock") ||
 		    (p2Choice === "Scissors" && p1Choice === "Paper")) {
-				alert('p2 wins!');
 				displayWinner(2);
-			resetTurn();
+				resetTurn();
 				updateWins(2);
 				updateLosses(1);
 	}
 	else if (p1Choice === p2Choice) {
 		alert('tie game');
+		resetTurn();
 	}
 	else alert('wtf');
 };
