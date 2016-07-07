@@ -119,6 +119,7 @@ function login(name, playerNumber) {
 			},
 			turn: 1
 		});
+
 		// currentPlayer = 2;
 	}	
 };
@@ -184,10 +185,10 @@ dbRef.on('value', function (Snapshot) {
 	displayName(2, player2Name);
 
 	//turn one
-	if (currentPlayer === 2) {
-		// alert('wtfssss');
-		displayWaitingFor(1);
-	}
+	// if (currentPlayer === 2) {
+	// 	// alert('wtfssss');
+	// 	displayWaitingFor(1);
+	// }
 
 	if (Snapshot.val().players.turn === 1) {
 		if (currentPlayer === 1 && canUpdateBoxP1) {
@@ -195,6 +196,12 @@ dbRef.on('value', function (Snapshot) {
 			canUpdateBoxP1 = false;
 
 			displayItsYourTurn();
+		} 
+
+		else if (currentPlayer === 2 && canUpdateBoxP2) {
+			// alert('wtfssss');
+			canUpdateBoxP2 = false;
+			displayWaitingFor(1);
 		}
 
 
@@ -203,7 +210,8 @@ dbRef.on('value', function (Snapshot) {
 	//turn two
 	else if (Snapshot.val().players.turn === 2) {
 		$(".userMessage2").remove();
-		if (currentPlayer === 2 && canUpdateBoxP2) {
+		$(".choicesDiv").remove();
+		if (currentPlayer === 2) {
 			showChoices(2, choicesArray);
 			canUpdateBoxP2 = false;
 
@@ -212,6 +220,7 @@ dbRef.on('value', function (Snapshot) {
 
 		if (currentPlayer === 1) {
 			displayWaitingFor(2);
+			// canUpdateBoxP2 = true;
 		}
 	}
 
@@ -438,12 +447,62 @@ function displayWaitingFor(otherPlayerNumber) {
 $('#chatForm').on('submit', function () {
 	var message = $('#chatMessage').val();
 	var chatter = getName(currentPlayer);
-	dbRef.update({
-		chat: chatter+": "+message
-	});
+
+	// alert(dbRef.child(chat))
+
+	if (!checkIfChatStarted()) {
+		initializeChatInFB();
+		userMsgToFB(message, chatter);
+	} else {
+		userMsgToFB(message, chatter);
+	}
+
+
+	// console.log(dbRef.hasChild('chat'));
+	// 	dbRef.update({
+	// 		chat: {
+	// 			message: chatter+": "+message
+	// 		}
+	// 	})
+	// }
+
+	// dbRef.child('chat').update({
+	// 	message: chatter+": "+message
+	// });
+
+	// console.log(dbRef.child('chat').val());
 
 
 	$('#chatMessage').val("");
 
 	return false;
 });
+
+function checkIfChatStarted() {
+	var chatStarted;
+	dbRef.once('value', function (snapshot) {
+		chatStarted = snapshot.hasChild('chat');
+	});
+	return chatStarted;
+}
+
+dbRef.child('chat').on('child_added', function (snapshot) {
+	console.log(snapshot.val());
+	console.log(snapshot.val().message);
+	var textMessage = snapshot.val().message;
+	var chatBox = $('#chatBox');
+	chatBox.val(chatBox.val()+textMessage+"\n");
+
+});
+
+function initializeChatInFB() {
+	dbRef.update({
+		chat: ''
+	});
+};
+
+function userMsgToFB(message, chatter) {
+	dbRef.child('chat').push({
+		message: chatter+": "+message
+	});
+};

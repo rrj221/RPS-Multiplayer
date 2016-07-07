@@ -1,3 +1,9 @@
+body {
+	background-color: #5A7F21;
+	color: yellow;
+	font-size: 20px;
+}
+
 .box {
 	border-color: black;
 	border-style: solid;
@@ -30,4 +36,8 @@
 
 #chatMessage {
 	width: 89%;
+}
+
+.coolPhoto {
+	margin-top: 30px;
 }
