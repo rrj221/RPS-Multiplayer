@@ -94,19 +94,50 @@ function login(name, playerNumber) {
 	// hideWaitingText(playerNumber);
 	// showWinsLosses(playerNumber);
 
+	// dbRef.once('value', function (snapshot) {
+	// 	if (!snapshot.player) {
+
+	// 	}
+	// });
 	if (playerNumber === 1) {
 		// alert('okay');
 		//initialize players object in firebase
-		dbRef.set({
-			players: {
-				1: {
-					losses: 0,
-					name: name,
-					wins: 0,
-				}
-			}		
-		});
+
 		currentPlayer = 1;
+		dbRef.once('value', function (snapshot) {
+			if (!snapshot.val().players) {
+				dbRef.set({
+					players: {
+						1: {
+							losses: 0,
+							name: name,
+							wins: 0,
+						}
+					}		
+				});
+			} else {
+				dbRef.child('players').update({
+					1: {
+						losses: 0,
+						name: name,
+						wins: 0,
+					},
+					turn: 1
+				});
+			}
+		});
+
+
+		// dbRef.set({
+		// 	players: {
+		// 		1: {
+		// 			losses: 0,
+		// 			name: name,
+		// 			wins: 0,
+		// 		}
+		// 	}		
+		// });
+		
 	} 
 	else if (playerNumber === 2) {
 		// alert('yay');
@@ -135,6 +166,7 @@ function login(name, playerNumber) {
 // 	hideWaitingText(playerNumber);
 // 	showWinsLosses(playerNumber);
 // }
+
 
 
 
@@ -203,9 +235,12 @@ dbRef.on('value', function (Snapshot) {
 			canUpdateBoxP2 = false;
 			displayWaitingFor(1);
 		}
-
-
 	}
+
+	// if (typeof Snapshot.val().players.turn !== number) {
+	// 	alert('huh');
+	// 	$('.choicesDiv').remove();
+	// }
 
 	//turn two
 	else if (Snapshot.val().players.turn === 2) {
@@ -449,13 +484,16 @@ $('#chatForm').on('submit', function () {
 	var chatter = getName(currentPlayer);
 
 	// alert(dbRef.child(chat))
-
+function chat(message, chatter) {
 	if (!checkIfChatStarted()) {
 		initializeChatInFB();
 		userMsgToFB(message, chatter);
 	} else {
 		userMsgToFB(message, chatter);
 	}
+}
+
+chat(message, chatter);
 
 
 	// console.log(dbRef.hasChild('chat'));
@@ -506,3 +544,19 @@ function userMsgToFB(message, chatter) {
 		message: chatter+": "+message
 	});
 };
+
+
+//LOGOUT/////////////////////
+$(window).on('unload', function() {
+	var message = getName(currentPlayer)+' has left the game. Oh no!!!'
+	var chatter = 'System Admin';
+	userMsgToFB(message, chatter);
+	// chat(message, chatter);
+	dbRef.child('players').child(currentPlayer).remove();
+	dbRef.child('players').child('turn').remove();
+	// $('.choicesDiv').remove();
+	// dbRef.once('value', function (snapshot) {
+	// 	$('.choicesDiv').remove();
+	// });
+});
+
